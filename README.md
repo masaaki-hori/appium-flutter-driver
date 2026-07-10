@@ -481,6 +481,51 @@ console.log(JSON.stringify(getTextResult));
 
 For debugging or testing in other programming languages, you can use the APK available in this [repository](https://github.com/Alpaca00/command-driven-list) or build an IPA.
 
+## Appium Inspector Support (Experimental)
+
+By default, [Appium Inspector](https://github.com/appium/appium-inspector) does not work against the
+`FLUTTER` context: it has no notion of Flutter widgets, and calls like `findElement`, W3C Actions
+(tap/drag/type), and page source are not implemented for that context.
+
+The driver forwards these commands to the app-under-test via `flutter:requestData` (see
+`getWindowRect`/`getPageSource`/`performActions` in
+[`driver/lib/commands/screen.ts`](driver/lib/commands/screen.ts) and the `findElement`/`performActions`
+handling in [`driver/lib/driver.ts`](driver/lib/driver.ts)'s `executeCommand`), but this only works if
+the app-under-test is built with a matching handler that can answer them. A reference implementation,
+adapted from [baleen-studio/appium-handler](https://github.com/baleen-studio/appium-handler), is
+provided under [`example/dart/appium_handler`](example/dart/appium_handler):
+
+- `appium_handler.dart` – the `flutter:requestData` callback. Builds an XML page source with pixel
+  bounds for every widget, resolves screen coordinates to widgets, and drives them via the finder with
+  the highest priority available (`ByTooltipMessage` > `BySemanticsLabel` > `ByValueKey` > `ByText` >
+  `ByType`).
+- `widget_tree.dart` – a thin wrapper around Flutter's `WidgetInspectorService` used to build that
+  page source without depending on the full DevTools protocol.
+- `appium_handler_extension.dart` – exposes `flutter_driver`'s internal extension class so
+  `appium_handler.dart` can call `tap`/`scroll`/`enter_text` directly once it has resolved a finder.
+
+### How to use
+
+Copy the three files in [`example/dart/appium_handler`](example/dart/appium_handler) into your
+project's `lib/` folder, add `xml: ^6.0.0` to your `pubspec.yaml` `dependencies` (`flutter_driver` and
+`flutter_test` are already required as `dev_dependencies` for `enableFlutterDriverExtension`), and wire
+it up in `main.dart`:
+
+```dart
+import 'package:flutter_driver/driver_extension.dart';
+import 'appium_handler/appium_handler.dart';
+
+void main() {
+  final handler = AppiumHandler();
+  enableFlutterDriverExtension(handler: handler.appiumHandler);
+  handler.buildDriverExtension();
+  runApp(const MyApp());
+}
+```
+
+Appium Inspector can then be started with `"appium:automationName": "flutter"` capabilities as usual.
+This is community-contributed and unverified in this repository's CI — please test it against your own
+app before relying on it, and report issues if you hit them.
 
 ## Troubleshooting
 

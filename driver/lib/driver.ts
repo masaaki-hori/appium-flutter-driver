@@ -20,7 +20,7 @@ import {
 import {clear, getText, setValue} from './commands/element';
 import {execute} from './commands/execute';
 import {click, longTap, performTouch, tap, tapEl} from './commands/gesture';
-import {getScreenshot} from './commands/screen';
+import {getScreenshot, getWindowRect, getPageSource, performActions} from './commands/screen';
 import {getClipboard, setClipboard} from './commands/clipboard';
 import {desiredCapConstraints} from './desired-caps';
 import {XCUITestDriver} from 'appium-xcuitest-driver';
@@ -87,6 +87,9 @@ class FlutterDriver extends BaseDriver<FluttertDriverConstraints> {
   public setValue = setValue;
   public clear = clear;
   public getScreenshot = getScreenshot;
+  public getWindowRect = getWindowRect;
+  public getPageSource = getPageSource;
+  public performActions = performActions;
 
   // gesture
   public click = click;
@@ -268,6 +271,21 @@ class FlutterDriver extends BaseDriver<FluttertDriverConstraints> {
     } else if (cmd === `receiveAsyncResponse`) {
       logger.debug(`Executing FlutterDriver response '${cmd}'`);
       return await this.receiveAsyncResponse(...args);
+    } else if (this.currentContext === FLUTTER_CONTEXT_NAME && cmd === `findElement`) {
+      // BaseDriver's default `findElement` has no notion of Flutter widgets, so forward it to the
+      // app-under-test's `requestData` handler (see getPageSource/getWindowRect in commands/screen.ts
+      // for the sibling Appium Inspector compatibility commands). Requires a Dart-side handler such
+      // as https://github.com/baleen-studio/appium-handler that resolves elements found in the
+      // `getPageSource` XML tree by id/xpath.
+      logger.debug(`Executing Flutter driver command '${cmd}' '${JSON.stringify(args)}'`);
+      const response = (await this.execute(`flutter:requestData`, [`${cmd}:${args}`])) as any;
+      return JSON.parse(response.response.message).value;
+    } else if (this.currentContext === FLUTTER_CONTEXT_NAME && cmd === `performActions`) {
+      // Lets W3C Actions-based clients (e.g. Appium Inspector) drive Flutter widgets by forwarding
+      // pointer/text actions to the app-under-test, which resolves the target widget under the
+      // given coordinates. See the note on `findElement` above for the required Dart-side handler.
+      logger.debug(`Executing Flutter driver command '${cmd}' '${JSON.stringify(args)}'`);
+      return await this.performActions(args[0]);
     } else if ([`setOrientation`, `getOrientation`, `back`].includes(cmd)) {
       // The `setOrientation` and `getOrientation` commands are handled differently
       // for iOS and Android platforms. These commands are deferred to the base driver's
