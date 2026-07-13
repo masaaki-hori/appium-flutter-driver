@@ -211,7 +211,7 @@ class AppiumHandler {
 
       final tooltip = node.getAttribute('tooltip');
       if (tooltip != null && tooltip.isNotEmpty) {
-        foundBy = 'byToolTip';
+        foundBy = 'byTooltip';
         value = tooltip;
       }
       final semanticLabel = node.getAttribute('semanticLabel');
@@ -454,7 +454,7 @@ class AppiumHandler {
     String? foundBy,
     String? value,
   }) async {
-    if (foundBy == 'byToolTip') {
+    if (foundBy == 'byTooltip') {
       return _driveFinder(
         command,
         'ByTooltipMessage',
