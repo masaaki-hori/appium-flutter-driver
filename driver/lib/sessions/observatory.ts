@@ -69,6 +69,10 @@ export async function connectSocket(
           return await originalSocketCall.apply(socket, args);
         } catch (e) {
           this.log.errorWithException(new Error(JSON.stringify(e)));
+          // Re-throw (rather than resolving to undefined) so callers see the real failure
+          // (e.g. a VM service RPC error) instead of a confusing secondary TypeError from
+          // dereferencing an undefined result
+          throw e;
         }
       };
       this.log.info(`Connecting to Dart Observatory: ${dartObservatoryURL}`);
