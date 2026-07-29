@@ -14,7 +14,7 @@ import {BaseDriver} from 'appium/driver';
 // @ts-ignore: no 'errors' export module
 import _ from 'lodash';
 
-//import {getClipboard, setClipboard} from './commands/clipboard';
+import {getClipboard, setClipboard} from './commands/clipboard';
 import {
   driverShouldDoProxyCmd,
   FLUTTER_CONTEXT_NAME,
@@ -27,7 +27,6 @@ import {clear, getText, setValue} from './commands/element';
 import {execute} from './commands/execute';
 import {click, longTap, performTouch, tap, tapEl} from './commands/gesture';
 import {getScreenshot, getWindowRect, getPageSource, performActions} from './commands/screen';
-import {getClipboard, setClipboard} from './commands/clipboard';
 import {desiredCapConstraints} from './desired-caps';
 import {log as logger} from './logger';
 import {PLATFORM} from './platform';
