@@ -1,12 +1,12 @@
 {
   "name": "appium-flutter-driver",
-  "version": "3.9.0",
+  "version": "3.9.1",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
     "": {
       "name": "appium-flutter-driver",
-      "version": "3.9.0",
+      "version": "3.9.1",
       "license": "MIT",
       "dependencies": {
         "appium-android-driver": "^13.0.0",
@@ -21,13 +21,10 @@
         "rpc-websockets": "^10.0.0"
       },
       "devDependencies": {
-        "@appium/eslint-config-appium-ts": "^3.0.0",
+        "@appium/oxc-config": "^1.1.0",
+        "@appium/semantic-release-config": "^1.1.0",
         "@appium/tsconfig": "^1.0.0",
         "@appium/types": "^1.0.0",
-        "@semantic-release/changelog": "^6.0.3",
-        "@semantic-release/git": "^10.0.1",
-        "prettier": "^3.0.0",
-        "semantic-release": "^25.0.2",
         "ts-node": "^10.9.1",
         "typescript": "~6.0"
       },
@@ -663,6 +660,154 @@
       },
       "optionalDependencies": {
         "@img/sharp-libvips-linux-x64": "1.3.2"
+      }
+    },
+    "node_modules/appium-uiautomator2-driver/node_modules/@appium/support/node_modules/asyncbox": {
+      "version": "6.3.0",
+      "resolved": "https://registry.npmjs.org/asyncbox/-/asyncbox-6.3.0.tgz",
+      "integrity": "sha512-7IFpnQDltd5rYQjhIJIpyismJtdWmw/pOABZKJfv2WVo0a6iYh2ZzUuCJJclae5mBtK0H/EychxXg91GB7rGdQ==",
+      "license": "Apache-2.0",
+      "dependencies": {
+        "p-limit": "^7.2.0"
+      },
+      "engines": {
+        "node": "^20.19.0 || ^22.12.0 || >=24.0.0",
+        "npm": ">=10"
+      }
+    },
+    "node_modules/appium-uiautomator2-driver/node_modules/@appium/support/node_modules/axios": {
+      "version": "1.18.0",
+      "resolved": "https://registry.npmjs.org/axios/-/axios-1.18.0.tgz",
+      "integrity": "sha512-E32NzpYKp++W7XRe52rHiXV2ehxmh3wbdgO7MHeFM+vqxLBYHzt0ElkiImtOBxtOmyp0yoC8C6uESVV84Y2/hw==",
+      "license": "MIT",
+      "dependencies": {
+        "follow-redirects": "^1.16.0",
+        "form-data": "^4.0.5",
+        "https-proxy-agent": "^5.0.1",
+        "proxy-from-env": "^2.1.0"
+      }
+    },
+    "node_modules/appium-uiautomator2-driver/node_modules/@appium/support/node_modules/sharp": {
+      "version": "0.35.1",
+      "resolved": "https://registry.npmjs.org/sharp/-/sharp-0.35.1.tgz",
+      "integrity": "sha512-lW979AMi+ESidzMv/Lnv+F9bknzLyxLqFI05Sm433vOeRcltgxQmXpnfOOFIAlKtwXU/ksupm2srQoFCkR214g==",
+      "license": "Apache-2.0",
+      "optional": true,
+      "dependencies": {
+        "@img/colour": "^1.1.0",
+        "detect-libc": "^2.1.2",
+        "semver": "^7.8.4"
+      },
+      "engines": {
+        "node": ">=20.9.0"
+      },
+      "funding": {
+        "url": "https://opencollective.com/libvips"
+      },
+      "optionalDependencies": {
+        "@img/sharp-darwin-arm64": "0.35.1",
+        "@img/sharp-darwin-x64": "0.35.1",
+        "@img/sharp-freebsd-wasm32": "0.35.1",
+        "@img/sharp-libvips-darwin-arm64": "1.3.0",
+        "@img/sharp-libvips-darwin-x64": "1.3.0",
+        "@img/sharp-libvips-linux-arm": "1.3.0",
+        "@img/sharp-libvips-linux-arm64": "1.3.0",
+        "@img/sharp-libvips-linux-ppc64": "1.3.0",
+        "@img/sharp-libvips-linux-riscv64": "1.3.0",
+        "@img/sharp-libvips-linux-s390x": "1.3.0",
+        "@img/sharp-libvips-linux-x64": "1.3.0",
+        "@img/sharp-libvips-linuxmusl-arm64": "1.3.0",
+        "@img/sharp-libvips-linuxmusl-x64": "1.3.0",
+        "@img/sharp-linux-arm": "0.35.1",
+        "@img/sharp-linux-arm64": "0.35.1",
+        "@img/sharp-linux-ppc64": "0.35.1",
+        "@img/sharp-linux-riscv64": "0.35.1",
+        "@img/sharp-linux-s390x": "0.35.1",
+        "@img/sharp-linux-x64": "0.35.1",
+        "@img/sharp-linuxmusl-arm64": "0.35.1",
+        "@img/sharp-linuxmusl-x64": "0.35.1",
+        "@img/sharp-webcontainers-wasm32": "0.35.1",
+        "@img/sharp-win32-arm64": "0.35.1",
+        "@img/sharp-win32-ia32": "0.35.1",
+        "@img/sharp-win32-x64": "0.35.1"
+      }
+    },
+    "node_modules/appium-uiautomator2-driver/node_modules/@appium/support/node_modules/teen_process": {
+      "version": "4.1.3",
+      "resolved": "https://registry.npmjs.org/teen_process/-/teen_process-4.1.3.tgz",
+      "integrity": "sha512-8W7Xp7WtJ5ZXjv0iHMsCgPPKzUt6ACfG/rDWX0tMIlMJaYcTYsPw3ZQQ9+hG7YsY+gm+DUATiyah3AraJ9JYpg==",
+      "license": "Apache-2.0",
+      "dependencies": {
+        "shell-quote": "^1.8.1"
+      },
+      "engines": {
+        "node": "^20.19.0 || ^22.12.0 || >=24.0.0",
+        "npm": ">=10"
+      }
+    },
+    "node_modules/appium-uiautomator2-driver/node_modules/@appium/types": {
+      "version": "1.5.1",
+      "resolved": "https://registry.npmjs.org/@appium/types/-/types-1.5.1.tgz",
+      "integrity": "sha512-cQkbSh6AwEGlowfKBxVngtBc5fkqAPmg4WdjGZ2txa81lpfuNTLX50VWM8Nxf3hiCgRMsRVfBWdU9x38OJqDrQ==",
+      "license": "Apache-2.0",
+      "dependencies": {
+        "@appium/schema": "1.2.1",
+        "type-fest": "5.7.0"
+      },
+      "engines": {
+        "node": "^20.19.0 || ^22.12.0 || >=24.0.0",
+        "npm": ">=10"
+      },
+      "peerDependencies": {
+        "@appium/logger": "^2.0.0"
+      }
+    },
+    "node_modules/appium-uiautomator2-driver/node_modules/@img/colour": {
+      "version": "1.1.0",
+      "resolved": "https://registry.npmjs.org/@img/colour/-/colour-1.1.0.tgz",
+      "integrity": "sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==",
+      "license": "MIT",
+      "optional": true,
+      "engines": {
+        "node": ">=18"
+      }
+    },
+    "node_modules/appium-uiautomator2-driver/node_modules/@img/sharp-darwin-arm64": {
+      "version": "0.35.1",
+      "resolved": "https://registry.npmjs.org/@img/sharp-darwin-arm64/-/sharp-darwin-arm64-0.35.1.tgz",
+      "integrity": "sha512-T15JRWOubQ3f5+GxnWeIvo47u5qV0M9HBgJhT+f2gE1e9e6OhR6K73Re52Hm80qWcu1DNb3GweKmpr/MnuP2Ow==",
+      "cpu": [
+        "arm64"
+      ],
+      "license": "Apache-2.0",
+      "optional": true,
+      "os": [
+        "darwin"
+      ],
+      "engines": {
+        "node": ">=20.9.0"
+      },
+      "funding": {
+        "url": "https://opencollective.com/libvips"
+      },
+      "optionalDependencies": {
+        "@img/sharp-libvips-darwin-arm64": "1.3.0"
+      }
+    },
+    "node_modules/appium-uiautomator2-driver/node_modules/@img/sharp-libvips-darwin-arm64": {
+      "version": "1.3.0",
+      "resolved": "https://registry.npmjs.org/@img/sharp-libvips-darwin-arm64/-/sharp-libvips-darwin-arm64-1.3.0.tgz",
+      "integrity": "sha512-EKbmBKtyTH+GPFDRw2TgK2oV6hyxxlJVIar4hoTYSNmIwipgMFdxPQqR392GmfdsPGWga0mCFN1cCKjRb9cljw==",
+      "cpu": [
+        "arm64"
+      ],
+      "license": "LGPL-3.0-or-later",
+      "optional": true,
+      "os": [
+        "darwin"
+      ],
+      "funding": {
+        "url": "https://opencollective.com/libvips"
       }
     },
     "node_modules/appium-uiautomator2-driver/node_modules/@xmldom/xmldom": {
@@ -8881,6 +9026,12 @@
         "signal-exit": "^3.0.2"
       }
     },
+    "node_modules/lockfile/node_modules/signal-exit": {
+      "version": "3.0.7",
+      "resolved": "https://registry.npmjs.org/signal-exit/-/signal-exit-3.0.7.tgz",
+      "integrity": "sha512-wnD2ZE+l+SPC/uoS0vXeE9L1+0wuaMqKlfz9AMUo38JsyLSBWSFcHR1Rri62LZc12vLr1gb3jl7iwQhgwpAbGQ==",
+      "license": "ISC"
+    },
     "node_modules/lodash": {
       "version": "4.18.1",
       "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.18.1.tgz",
@@ -8998,16 +9149,6 @@
       "funding": {
         "type": "opencollective",
         "url": "https://opencollective.com/express"
-      }
-    },
-    "node_modules/mimic-fn": {
-      "version": "2.1.0",
-      "resolved": "https://registry.npmjs.org/mimic-fn/-/mimic-fn-2.1.0.tgz",
-      "integrity": "sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==",
-      "extraneous": true,
-      "license": "MIT",
-      "engines": {
-        "node": ">=6"
       }
     },
     "node_modules/minimalistic-assert": {
@@ -9173,22 +9314,6 @@
       "license": "ISC",
       "dependencies": {
         "wrappy": "1"
-      }
-    },
-    "node_modules/onetime": {
-      "version": "5.1.2",
-      "resolved": "https://registry.npmjs.org/onetime/-/onetime-5.1.2.tgz",
-      "integrity": "sha512-kbpaSSGJTWdAY5KPVeMOKXSrPtr8C8C7wodJbcsd51jRnmD+GZu8Y0VoU6Dm5Z4vWr0Ig/1NKuWRKf7j5aaYSg==",
-      "extraneous": true,
-      "license": "MIT",
-      "dependencies": {
-        "mimic-fn": "^2.1.0"
-      },
-      "engines": {
-        "node": ">=6"
-      },
-      "funding": {
-        "url": "https://github.com/sponsors/sindresorhus"
       }
     },
     "node_modules/p-limit": {
@@ -9770,12 +9895,6 @@
         "url": "https://github.com/sponsors/ljharb"
       }
     },
-    "node_modules/signal-exit": {
-      "version": "3.0.7",
-      "resolved": "https://registry.npmjs.org/signal-exit/-/signal-exit-3.0.7.tgz",
-      "integrity": "sha512-wnD2ZE+l+SPC/uoS0vXeE9L1+0wuaMqKlfz9AMUo38JsyLSBWSFcHR1Rri62LZc12vLr1gb3jl7iwQhgwpAbGQ==",
-      "license": "ISC"
-    },
     "node_modules/spdx-correct": {
       "version": "3.2.0",
       "resolved": "https://registry.npmjs.org/spdx-correct/-/spdx-correct-3.2.0.tgz",
@@ -9786,7 +9905,13 @@
         "spdx-license-ids": "^3.0.0"
       }
     },
-    "node_modules/spdx-correct/node_modules/spdx-expression-parse": {
+    "node_modules/spdx-exceptions": {
+      "version": "2.5.0",
+      "resolved": "https://registry.npmjs.org/spdx-exceptions/-/spdx-exceptions-2.5.0.tgz",
+      "integrity": "sha512-PiU42r+xO4UbUS1buo3LPJkjlO7430Xn5SVAhdpzzsPHsjbYVflnnFdATgabnLude+Cqu25p6N+g2lw/PFsa4w==",
+      "license": "CC-BY-3.0"
+    },
+    "node_modules/spdx-expression-parse": {
       "version": "3.0.1",
       "resolved": "https://registry.npmjs.org/spdx-expression-parse/-/spdx-expression-parse-3.0.1.tgz",
       "integrity": "sha512-cbqHunsQWnJNE6KhVSMsMeH5H/L9EpymbzqTQ3uLwNCLZ1Q481oWaofqH7nO6V07xlXwY6PhQdQ2IedWx/ZK4Q==",
@@ -9795,12 +9920,6 @@
         "spdx-exceptions": "^2.1.0",
         "spdx-license-ids": "^3.0.0"
       }
-    },
-    "node_modules/spdx-exceptions": {
-      "version": "2.5.0",
-      "resolved": "https://registry.npmjs.org/spdx-exceptions/-/spdx-exceptions-2.5.0.tgz",
-      "integrity": "sha512-PiU42r+xO4UbUS1buo3LPJkjlO7430Xn5SVAhdpzzsPHsjbYVflnnFdATgabnLude+Cqu25p6N+g2lw/PFsa4w==",
-      "license": "CC-BY-3.0"
     },
     "node_modules/spdx-license-ids": {
       "version": "3.0.23",
@@ -10148,16 +10267,6 @@
       "dependencies": {
         "spdx-correct": "^3.0.0",
         "spdx-expression-parse": "^3.0.0"
-      }
-    },
-    "node_modules/validate-npm-package-license/node_modules/spdx-expression-parse": {
-      "version": "3.0.1",
-      "resolved": "https://registry.npmjs.org/spdx-expression-parse/-/spdx-expression-parse-3.0.1.tgz",
-      "integrity": "sha512-cbqHunsQWnJNE6KhVSMsMeH5H/L9EpymbzqTQ3uLwNCLZ1Q481oWaofqH7nO6V07xlXwY6PhQdQ2IedWx/ZK4Q==",
-      "license": "MIT",
-      "dependencies": {
-        "spdx-exceptions": "^2.1.0",
-        "spdx-license-ids": "^3.0.0"
       }
     },
     "node_modules/vary": {
