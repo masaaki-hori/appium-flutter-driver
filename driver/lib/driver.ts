@@ -286,6 +286,16 @@ class FlutterDriver extends BaseDriver<FluttertDriverConstraints> {
       // given coordinates. See the note on `findElement` above for the required Dart-side handler.
       logger.debug(`Executing Flutter driver command '${cmd}' '${JSON.stringify(args)}'`);
       return await this.performActions(args[0]);
+    } else if (this.currentContext === FLUTTER_CONTEXT_NAME && cmd === `click`) {
+      // Upstream Appium Inspector's 'Tap By Element' screenshot interaction mode issues the
+      // standard WebDriver `click` command (`POST .../element/:elementId/click`, internal command
+      // name `click`) with only an already-resolved element reference and no coordinates. Forward
+      // it to appium_handler.dart's `'tap'` performActions case (see the note on `findElement`
+      // above), which accepts an elementId-only lookup (no x/y) and derives the tap point from the
+      // resolved widget's own bounds.
+      const elementId = args[0];
+      logger.debug(`Executing Flutter driver command '${cmd}' '${JSON.stringify(args)}'`);
+      return await this.performActions([{actions: [{type: `tap`, elementId}]}]);
     } else if ([`setOrientation`, `getOrientation`, `back`].includes(cmd)) {
       // The `setOrientation` and `getOrientation` commands are handled differently
       // for iOS and Android platforms. These commands are deferred to the base driver's
