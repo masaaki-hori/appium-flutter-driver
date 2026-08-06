@@ -278,6 +278,16 @@ class FlutterDriver extends BaseDriver<FluttertDriverConstraints> {
       const elementId = args[0];
       logger.debug(`Executing Flutter driver command '${cmd}' '${JSON.stringify(args)}'`);
       return await this.performActions([{actions: [{type: `tap`, elementId}]}]);
+    } else if (this.currentContext === FLUTTER_CONTEXT_NAME && cmd === `releaseActions`) {
+      // `DELETE .../actions` (W3C's "Release Actions" endpoint) - webdriverio's own
+      // `driver.action('pointer')...perform()` builder calls this automatically after every
+      // action as cleanup, to reset any held-down pointer/key input device state. `performActions`
+      // above has no such persistent state between calls (each is a self-contained request/
+      // response to appium_handler.dart), so there's nothing to release - just acknowledge it, the
+      // same as the base driver's default handling would if this command were implemented at all
+      // (leaving it unhandled instead throws 'Method has not yet been implemented').
+      logger.debug(`Executing Flutter driver command '${cmd}'`);
+      return null;
     } else if ([`setOrientation`, `getOrientation`, `back`].includes(cmd)) {
       // The `setOrientation` and `getOrientation` commands are handled differently
       // for iOS and Android platforms. These commands are deferred to the base driver's
