@@ -1,13 +1,13 @@
 # This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
 # For more information see: https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
 
-name: publish driver
+name: publish finder for nodejs
 
 on:
   workflow_dispatch:
   push:
     tags:
-      - 'v[0-9]*.[0-9]*.[0-9]*'
+      - 'js-finder-[0-9]*.[0-9]*.[0-9]*'
 
 permissions:
   contents: write
@@ -24,9 +24,9 @@ jobs:
           node-version: lts/*
           check-latest: true
       - run: npm install
-        working-directory: driver
+        working-directory: finder/nodejs
       - run: npm test
-        working-directory: driver
+        working-directory: finder/nodejs
 
   publish-npm:
     needs: build
@@ -40,7 +40,7 @@ jobs:
           node-version: lts/*
           check-latest: true
       - run: npm install
-        working-directory: driver
+        working-directory: finder/nodejs
       - run: npm publish
         name: Publish the package
-        working-directory: driver
+        working-directory: finder/nodejs
