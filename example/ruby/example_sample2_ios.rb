@@ -34,12 +34,27 @@ class ExampleTests < Minitest::Test
     @driver&.quit
   end
 
+  # Headless/CI simulators sometimes don't reflect a rotation change within the driver's
+  # default wait, even though window/transition animations are already disabled - a
+  # transient timing flake, not a real failure to rotate, so a short retry clears it.
+  def set_orientation_with_retry(driver, orientation, attempts: 5, wait: 2)
+    attempts.times do |i|
+      begin
+        driver.orientation = orientation
+        return if driver.orientation == orientation
+      rescue Selenium::WebDriver::Error::InvalidElementStateError => e
+        raise e if i == attempts - 1
+      end
+      sleep wait
+    end
+  end
+
   def test_run_example_ios
     @driver.context = 'NATIVE_APP'
 
-    @driver.orientation = :landscape
+    set_orientation_with_retry(@driver, :landscape)
     assert_equal @driver.orientation, :landscape
-    @driver.orientation = :portrait
+    set_orientation_with_retry(@driver, :portrait)
     assert_equal @driver.orientation, :portrait
 
     element = @driver.find_element :accessibility_id, 'launchFlutter'

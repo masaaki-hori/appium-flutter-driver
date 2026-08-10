@@ -23,11 +23,45 @@ export const OBSERVATORY_URL_PATTERN = new RegExp(
 const moduleCheckIntervalCount = 30;
 const moduleCheckIntervalMs = 500;
 
+// The observatory URL is only known once it's been printed to the device log (see
+// 'getObservatoryWsUri'), which is right when the VM service starts listening - not
+// necessarily right when it's ready to service RPC calls. That gap is normally sub-second, but
+// on a slower/real device it can occasionally outlast a single connection attempt, so a handful
+// of quick retries here absorbs the race without needing 'maxRetryCount'/'retryBackoffTime'
+// (which only govern waiting for the log line itself, not this connection).
+const socketConnectRetryCount = 5;
+const socketConnectRetryIntervalMs = 1000;
+
 // SOCKETS
 /**
- * Opens an isolate socket for the given Flutter observatory URL.
+ * Opens an isolate socket for the given Flutter observatory URL, retrying a few times to absorb
+ * the brief window right after the VM service starts listening where it isn't reliably
+ * connectable yet.
  */
 export async function connectSocket(
+  this: FlutterDriver,
+  dartObservatoryURL: string,
+  caps: Record<string, any>,
+): Promise<IsolateSocket> {
+  let lastError: Error | undefined;
+  for (let attempt = 1; attempt <= socketConnectRetryCount; attempt++) {
+    try {
+      return await attemptConnectSocket.bind(this)(dartObservatoryURL, caps);
+    } catch (e) {
+      lastError = e as Error;
+      if (attempt < socketConnectRetryCount) {
+        this.log.debug(
+          `Attempt ${attempt}/${socketConnectRetryCount} to connect to the Dart Observatory failed, ` +
+            `retrying in ${socketConnectRetryIntervalMs}ms: ${lastError.message}`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, socketConnectRetryIntervalMs));
+      }
+    }
+  }
+  throw lastError;
+}
+
+async function attemptConnectSocket(
   this: FlutterDriver,
   dartObservatoryURL: string,
   caps: Record<string, any>,
@@ -93,15 +127,35 @@ export async function connectSocket(
         };
         this.log.info(`Listing all isolates: ${JSON.stringify(vm.isolates)}`);
         // To accept 'main.dart:main()' and 'main'
-        const mainIsolateData = vm.isolates.find((e) => e.name.includes(`main`));
-        if (!mainIsolateData) {
+        const mainIsolateCandidates = vm.isolates.filter((e) => e.name.includes(`main`));
+        if (mainIsolateCandidates.length === 0) {
           this.log.error(`Cannot get Dart main isolate info`);
           removeListenerAndResolve(null);
           socket.close();
           return;
         }
+        // More than one 'main'-named isolate can exist (e.g. a plugin running its own
+        // secondary Flutter engine) - only one of them may actually have the flutter_driver
+        // extension registered, so probe each candidate instead of assuming the first one
+        // (previously picked unconditionally) is the app's real UI isolate.
+        let selectedIsolateId: string | number | undefined;
+        for (const candidate of mainIsolateCandidates) {
+          const candidateIsolate = (await socket.call(`getIsolate`, {
+            isolateId: `${candidate.id}`,
+          })) as {extensionRPCs: [string] | null} | null;
+          if (
+            candidateIsolate &&
+            Array.isArray(candidateIsolate.extensionRPCs) &&
+            candidateIsolate.extensionRPCs.includes(`ext.flutter.driver`)
+          ) {
+            selectedIsolateId = candidate.id;
+            break;
+          }
+        }
+        // None of the 'main' isolates have the extension registered yet - fall back to the
+        // first candidate so the retry-with-error-message loop below still applies as before.
         // e.g. 'isolates/2978358234363215', '2978358234363215'
-        socket.isolateId = mainIsolateData.id;
+        socket.isolateId = selectedIsolateId ?? mainIsolateCandidates[0].id;
       }
 
       // It could take time to load the expected module.
