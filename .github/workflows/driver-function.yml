@@ -54,19 +54,25 @@ jobs:
         driver
     - run: |
         appium driver install --source=local driver
-        nohup appium --log-timestamp --log-no-colors > appium.log &
-        # Wait for Appium server to be ready
-        for i in {1..30}; do
-          if curl -s http://localhost:4723/status > /dev/null; then
-            echo "Appium server is ready"
-            exit 0
-          fi
-          echo "Waiting for Appium server... attempt $i/30"
-          sleep 2
-        done
-        echo "Appium server failed to start"
-        cat appium.log
-        exit 1
+        nohup appium --log-timestamp --log-no-colors > appium.log 2>&1 &
+        sleep 5
+        # Verify Appium server is running
+        if ! lsof -Pi :4723 -sTCP:LISTEN -t >/dev/null ; then
+          echo "Appium server failed to start"
+          cat appium.log
+          exit 1
+        fi
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 3.2
+    - name: Install dependencies
+      run: bundle install
+      working-directory: example/ruby
+    - name: Run tests
+      run: ruby example_sample2_ios.rb
+      working-directory: example/ruby        exit 1
 
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
