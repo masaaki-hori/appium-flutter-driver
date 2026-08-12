@@ -6,6 +6,8 @@
     "appium",
     "flutter"
   ],
+  "exports": "./lib/index.js",
+  "main": "./lib/index.js"
   "license": "MIT",
   "author": "TruongSinh Tran-Nguyen <i@truongsinh.pro>",
   "repository": {
