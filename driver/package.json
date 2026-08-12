@@ -25,6 +25,7 @@
     "scripts"
   ],
   "main": "./build/lib/driver.js",
+  "exports": "./build/lib/driver.js",
   "types": "./build/lib/index.d.ts",
   "scripts": {
     "build": "tsc -b",
