@@ -72,7 +72,7 @@ jobs:
       working-directory: example/ruby
     - name: Run tests
       run: ruby example_sample2_ios.rb
-      working-directory: example/ruby        exit 1
+      working-directory: example/ruby
 
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
