@@ -27,7 +27,8 @@
   "exports": {
     ".": {
       "types": "./build/lib/serializer.d.ts",
-      "import": "./build/lib/serializer.js"
+      "import": "./build/lib/serializer.js",
+      "require": "./build/lib/serializer.js"
     }
   },
   "scripts": {
