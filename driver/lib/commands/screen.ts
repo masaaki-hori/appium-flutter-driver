@@ -1,5 +1,5 @@
-import type {FlutterDriver} from '../driver';
-import type {IsolateSocket} from '../sessions/isolate_socket';
+import type {FlutterDriver} from '../driver.js';
+import type {IsolateSocket} from '../sessions/isolate_socket.js';
 
 // Uses flutter_driver's own `screenshot` command (via `ext.flutter.driver`, same channel as
 // tap/scroll/enter_text) rather than the engine's raw `_flutter.screenshot` VM-service RPC.
