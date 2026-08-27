@@ -1,6 +1,6 @@
 {
   "name": "appium-flutter-driver",
-  "version": "3.10.0",
+  "version": "4.0.0",
   "description": "Appium Flutter driver",
   "keywords": [
     "appium",
@@ -24,9 +24,9 @@
     "npm-shrinkwrap.json",
     "scripts"
   ],
+  "type": "module",
   "main": "./build/lib/driver.js",
-  "exports": "./build/lib/driver.js",
-  "types": "./build/lib/index.d.ts",
+  "types": "./build/lib/driver.d.ts",
   "scripts": {
     "build": "tsc -b",
     "dev": "npm run build -- --watch",
@@ -37,12 +37,12 @@
     "format:check": "oxfmt -c oxfmt.config.mjs --check .",
     "prepublishOnly": "cp ../README.md ../LICENSE ./",
     "prepare": "npm run clean && npm run build",
-    "test": "echo no test",
+    "test": "npm run build && node --test test/*.test.mjs",
     "clean-dependency": "rm -rf node_modules && rm -f package-lock.json"
   },
   "dependencies": {
-    "appium-android-driver": "^13.0.0",
-    "appium-flutter-finder": "file:../finder/nodejs",
+    "appium-android-driver": "^14.0.6",
+    "appium-flutter-finder": "^0.3.0",
     "appium-ios-device": "^3.0.0",
     "appium-uiautomator2-driver": "^8.1.0",
     "appium-xcuitest-driver": "^11.0.0",

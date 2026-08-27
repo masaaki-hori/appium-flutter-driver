@@ -1,7 +1,6 @@
-import {byValueKey, byText, byTooltip} from 'appium-flutter-finder';
-import type {SerializableFinder} from 'appium-flutter-finder';
+import {byValueKey, byText, byTooltip, type SerializableFinder} from 'appium-flutter-finder';
 
-import type {FlutterDriver} from '../driver';
+import type {FlutterDriver} from '../driver.js';
 
 export type FinderInput =
   | {key: string}

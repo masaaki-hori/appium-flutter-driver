@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.0.0
+- Convert the driver package from CommonJS to ESM
+
+## 3.10.1
+- Fix loading the ESM-only `appium-flutter-finder` dependency from the CommonJS driver ([#923](https://github.com/appium/appium-flutter-driver/issues/923))
+
 ## 3.10.0
 - Update Appium XCUITest driver dependency from 10.43.1 to 11.17.7
     - WebDriverAgent is updated from 11.4.x to 15.1.x, adding Xcode 27 build support and iOS 27-related fixes.
