@@ -56,7 +56,7 @@ export const createSession: any = async function (this: FlutterDriver, sessionId
         );
     }
 
-    return [sessionId, this.opts];
+    return [sessionId, caps];
   } catch (e) {
     await this.deleteSession();
     throw e;

@@ -26,7 +26,7 @@ import {
 import {clear, getText, setValue} from './commands/element.js';
 import {execute} from './commands/execute.js';
 import {click, longTap, performTouch, tap, tapEl} from './commands/gesture.js';
-import {getScreenshot} from './commands/screen.js';
+import {getPageSource, getScreenshot, getWindowRect, performActions} from './commands/screen.js';
 import {desiredCapConstraints} from './desired-caps.js';
 import {log as logger} from './logger.js';
 import {PLATFORM} from './platform.js';
