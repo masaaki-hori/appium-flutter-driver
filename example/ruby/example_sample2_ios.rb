@@ -21,7 +21,9 @@ class ExampleTests < Minitest::Test
       # processArguments is passed explicitly because the driver currently injects
       # these flags into its own caps copy only, which never reaches XCUITest.
       dartVmServicePort: 9123,
-      processArguments: { args: ['--vm-service-port=9123', '--disable-service-auth-codes'] },
+      # The bundled sample2 app ships a pre-3.10 Flutter engine, which only understands the
+      # legacy --observatory-port flag (--vm-service-port needs Flutter >= 3.10).
+      processArguments: { args: ['--observatory-port=9123', '--disable-service-auth-codes'] },
     }.merge(
       ENV['PREBUILT_WDA_PATH'] ? { usePreinstalledWDA: true, prebuiltWDAPath: ENV['PREBUILT_WDA_PATH'] } : {}
     ),
