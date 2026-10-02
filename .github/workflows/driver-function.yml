@@ -52,9 +52,12 @@ jobs:
     - run: npm install
       working-directory:
         driver
+    - name: Download prebuilt WDA
+      run: node scripts/download-wda-sim.mjs --platform=ios --outdir="$RUNNER_TEMP/wda"
+      working-directory: driver
     - run: |
         appium driver install --source=local driver
-        nohup appium --log-timestamp --log-no-colors > appium.log 2>&1 &
+        nohup appium --log-timestamp --log-no-colors --keep-alive-timeout 1800 > appium.log 2>&1 &
         sleep 5
         # Verify Appium server is running
         if ! lsof -Pi :4723 -sTCP:LISTEN -t >/dev/null ; then
@@ -73,6 +76,8 @@ jobs:
     - name: Run tests
       run: ruby example_sample2_ios.rb
       working-directory: example/ruby
+      env:
+        PREBUILT_WDA_PATH: ${{ runner.temp }}/wda/WebDriverAgentRunner-Runner.app
 
     - name: Save server output
       if: ${{ always() }}

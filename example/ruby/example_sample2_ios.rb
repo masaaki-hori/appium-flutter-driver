@@ -16,8 +16,9 @@ class ExampleTests < Minitest::Test
       wdaLaunchTimeout: 600_000,
       maxRetryCount: 60,
       retryBackoffTime: 10000,
-
-    },
+    }.merge(
+      ENV['PREBUILT_WDA_PATH'] ? { usePreinstalledWDA: true, prebuiltWDAPath: ENV['PREBUILT_WDA_PATH'] } : {}
+    ),
     appium_lib: {
       export_session: true,
       wait_timeout: 20,
