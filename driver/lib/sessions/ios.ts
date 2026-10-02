@@ -2,7 +2,6 @@ import net from 'node:net';
 
 import {utilities} from 'appium-ios-device';
 import {XCUITestDriver} from 'appium-xcuitest-driver';
-import type {XCUITestDriverOpts} from 'appium-xcuitest-driver/build/lib/driver.js';
 import B from 'bluebird';
 import {checkPortStatus} from 'portscanner';
 
@@ -11,6 +10,9 @@ import type {IsolateSocket} from './isolate_socket.js';
 import {LogMonitor} from './log-monitor.js';
 import type {LogEntry} from './log-monitor.js';
 import {connectSocket, extractObservatoryUrl, OBSERVATORY_URL_PATTERN} from './observatory.js';
+
+// appium-xcuitest-driver does not export its opts type via package "exports"
+type XCUITestDriverOpts = ConstructorParameters<typeof XCUITestDriver>[0];
 
 const LOCALHOST = `127.0.0.1`;
 
