@@ -16,6 +16,12 @@ class ExampleTests < Minitest::Test
       wdaLaunchTimeout: 600_000,
       maxRetryCount: 60,
       retryBackoffTime: 10000,
+      # Pin the Dart VM service port so the driver can fall back to it when the
+      # "Dart VM service is listening on" line never shows up in the simulator log.
+      # processArguments is passed explicitly because the driver currently injects
+      # these flags into its own caps copy only, which never reaches XCUITest.
+      dartVmServicePort: 9123,
+      processArguments: { args: ['--vm-service-port=9123', '--disable-service-auth-codes'] },
     }.merge(
       ENV['PREBUILT_WDA_PATH'] ? { usePreinstalledWDA: true, prebuiltWDAPath: ENV['PREBUILT_WDA_PATH'] } : {}
     ),
