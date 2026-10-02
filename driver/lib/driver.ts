@@ -30,6 +30,7 @@ import {getPageSource, getScreenshot, getWindowRect, performActions} from './com
 import {desiredCapConstraints} from './desired-caps.js';
 import {log as logger} from './logger.js';
 import {PLATFORM} from './platform.js';
+import {decode} from './sessions/base64url.js';
 import type {IsolateSocket} from './sessions/isolate_socket.js';
 import type {LogMonitor} from './sessions/log-monitor.js';
 import {executeElementCommand, executeGetVMCommand, executeGetIsolateCommand} from './sessions/observatory.js';
@@ -50,6 +51,16 @@ const WEBVIEW_NO_PROXY = [
   [`POST`, new RegExp(`^/session/[^/]+/touch/multi/perform`)],
   [`POST`, new RegExp(`^/session/[^/]+/touch/perform`)],
 ] as RouteMatcher[];
+
+// appium-flutter-finder serializes finders as base64-encoded JSON carrying a `finderType` key,
+// unlike the opaque element ids returned by appium_handler.dart's `findElement`.
+function isFlutterFinderElementId(elementId: unknown): boolean {
+  try {
+    return typeof JSON.parse(decode(elementId as string))?.finderType === `string`;
+  } catch {
+    return false;
+  }
+}
 
 class FlutterDriver extends BaseDriver<FluttertDriverConstraints> {
   public socket: IsolateSocket | null;
@@ -279,6 +290,11 @@ class FlutterDriver extends BaseDriver<FluttertDriverConstraints> {
       // resolved widget's own bounds.
       const elementId = args[0];
       logger.debug(`Executing Flutter driver command '${cmd}' '${JSON.stringify(args)}'`);
+      if (isFlutterFinderElementId(elementId)) {
+        // Element ids produced by appium-flutter-finder encode a flutter_driver finder; tap it
+        // through the standard `tap` command so apps without appium_handler.dart keep working.
+        return await super.executeCommand(cmd, ...args);
+      }
       return await this.performActions([{actions: [{type: `tap`, elementId}]}]);
     } else if (this.currentContext === FLUTTER_CONTEXT_NAME && cmd === `releaseActions`) {
       // `DELETE .../actions` (W3C's "Release Actions" endpoint) - webdriverio's own
