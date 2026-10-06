@@ -153,8 +153,9 @@ reimplementing native automation itself.
 
 This is a fork (origin `masaaki-hori/appium-flutter-driver`, upstream `appium/appium-flutter-driver`)
 that makes Appium Inspector and other W3C-standard clients usable in the `FLUTTER` context. It works
-together with the customized `appium-inspector` and the app-side `appium-handler` package (sibling
-folders). The cross-repo protocol contract is documented in the parent folder's `CLAUDE.md`.
+together with the customized `appium-inspector` and the app-side `appium-handler` package. The
+cross-repo protocol contract is defined in the appium-handler repo's `CLAUDE.md` ("Protocol
+contract"); the reasons behind it are in appium-handler's `docs/design-notes.md`.
 
 In the `FLUTTER` context, these standard commands are forwarded to the app-under-test through
 `flutter:requestData` (handled by `appium_handler.dart`'s `appiumHandler(String? cmd)` switch):
