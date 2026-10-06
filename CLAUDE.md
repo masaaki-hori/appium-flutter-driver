@@ -138,8 +138,9 @@ reimplementing native automation itself.
 
 - The app-under-test must be built in `debug` or `profile` mode and depend on `flutter_driver`
   (release-mode/production apps can't be driven this way).
-- `FLUTTER` context has no page source support (`getRenderTree` is the substitute) and doesn't work
-  with Appium Inspector.
+- In upstream, the `FLUTTER` context has no page source support (`getRenderTree` is the substitute)
+  and doesn't work with Appium Inspector. **In this fork it does**, but only when the app-under-test
+  embeds the `appium_handler` package — see "Fork customizations" below.
 - Any change that affects app process/VM-service reattachment (`activateApp`, `installApp`,
   `flutter:launchApp`, `mobile:activateApp`) must go through `reConnectFlutterDriver` — don't bypass
   it or the socket will point at a stale Dart VM Service instance.
@@ -147,3 +148,34 @@ reimplementing native automation itself.
   actions that would regenerate it unnecessarily.
 - Peer dependency is `appium ^3.0.0`; Node engines are constrained to `^20.19.0 || ^22.12.0 ||
   >=24.0.0` (see `driver/package.json`).
+
+## Fork customizations (Appium Inspector support)
+
+This is a fork (origin `masaaki-hori/appium-flutter-driver`, upstream `appium/appium-flutter-driver`)
+that makes Appium Inspector and other W3C-standard clients usable in the `FLUTTER` context. It works
+together with the customized `appium-inspector` and the app-side `appium-handler` package (sibling
+folders). The cross-repo protocol contract is documented in the parent folder's `CLAUDE.md`.
+
+In the `FLUTTER` context, these standard commands are forwarded to the app-under-test through
+`flutter:requestData` (handled by `appium_handler.dart`'s `appiumHandler(String? cmd)` switch):
+
+| W3C command | Where | Sent as |
+|---|---|---|
+| `getWindowRect` | `lib/commands/screen.ts` | `getScreenSize` |
+| `getPageSource` | `lib/commands/screen.ts` | `getPageSource` (XML built from the widget tree) |
+| `performActions` | `lib/commands/screen.ts`, `executeCommand` in `lib/driver.ts` | `performActions:<json>` |
+| `findElement` | `executeCommand` in `lib/driver.ts` | `findElement:<args>` |
+| `click` | `executeCommand` in `lib/driver.ts` | `performActions` with `{type: 'tap', elementId}` — unless `isFlutterFinderElementId()` says the id came from `appium-flutter-finder`, in which case it goes through the standard flutter_driver `tap` so apps without `appium_handler` keep working |
+| `releaseActions` | `executeCommand` in `lib/driver.ts` | not forwarded; acknowledged with `null` (nothing to release) |
+
+- These commands fail (or return garbage) if the app doesn't register the handler via
+  `enableFlutterDriverExtension(handler: AppiumHandler().appiumHandler)`.
+- The `performActions` payload, including the fork-specific action types (`tap`, `tapDirect`,
+  `checkExistence`, `enterText`, `checkText`, `elementId`), is passed through as-is — the driver
+  doesn't validate it, so changes to action types only need the Inspector and handler sides, but
+  must be made in both.
+- Code comments here point to `https://github.com/baleen-studio/appium-handler`; the handler
+  actually used in this project is `masaaki-hori/appium-handler`.
+- When merging upstream, re-check that `executeCommand`'s `FLUTTER_CONTEXT_NAME` branches above
+  are still reached (an upstream refactor of command routing would silently send these commands to
+  `BaseDriver` and break Inspector without any build error).

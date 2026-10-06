@@ -5,6 +5,7 @@ logs
 *.log
 npm-debug.log*
 package-lock.json*
+CAUDE.md
 
 # Runtime data
 pids
