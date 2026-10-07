@@ -70,6 +70,10 @@ async function attemptConnectSocket(
 
   this.log.debug(`Establishing a connection to the Dart Observatory`);
 
+  // Why this attempt failed, when it is more specific than "could not connect" - reported in the
+  // thrown error so the client sees the cause, not only "check the server log".
+  let failureReason: string | undefined;
+
   const connectedPromise = new Promise<IsolateSocket | null>((resolve) => {
     const socket = new IsolateSocket(dartObservatoryURL);
 
@@ -179,7 +183,21 @@ async function attemptConnectSocket(
           }
         });
       } catch (e) {
-        this.log.error(e.message);
+        if (e.message.includes(`"ext.flutter.driver" is not found`)) {
+          // The VM service is reachable, but no isolate ever registered flutter_driver's
+          // extension: the app under test isn't calling `enableFlutterDriverExtension()` - most
+          // often a build without the flag that guards it, or an old build still installed
+          // (with `noReset`, an installed app is not replaced by a newer build).
+          failureReason =
+            `the app under test did not register the flutter_driver extension ("ext.flutter.driver") ` +
+            `within ${(moduleCheckIntervalCount * moduleCheckIntervalMs) / 1000}s. Make sure it calls ` +
+            `enableFlutterDriverExtension() before runApp() (check the build flags that enable it), ` +
+            `and that the installed app is the build you expect`;
+          this.log.error(`Connected to ${dartObservatoryURL}, but ${failureReason}`);
+          this.log.debug(e.message);
+        } else {
+          this.log.error(e.message);
+        }
         removeListenerAndResolve(null);
         return;
       }
@@ -194,7 +212,9 @@ async function attemptConnectSocket(
   }
 
   throw new Error(
-    `Cannot connect to the Dart Observatory URL ${dartObservatoryURL}. Check the server log for more details`,
+    failureReason
+      ? `Connected to the Dart Observatory URL ${dartObservatoryURL}, but ${failureReason}`
+      : `Cannot connect to the Dart Observatory URL ${dartObservatoryURL}. Check the server log for more details`,
   );
 }
 

@@ -30,15 +30,15 @@ cd driver
 npm install
 npm run build          # tsc -b, compiles TS to build/
 npm run dev             # build --watch
-npm run lint             # eslint .
+npm run lint             # oxlint
 npm run lint:fix
-npm run format           # prettier -w ./lib
+npm run format           # oxfmt
 npm run format:check     # used in CI
+npm test                 # build + a few node:test unit tests (test/*.test.mjs)
 npm run clean            # tsc -b --clean
 ```
 
-There is no unit test suite for the driver (`npm test` is a no-op — `echo no test`). Correctness is
-instead verified by:
+Unit tests are few (`test/*.test.mjs`, `node --test`). Correctness is mostly verified by:
 - CI type-check/lint/format (`nodejs.yml`)
 - End-to-end functional runs against a real emulator/simulator + a real Flutter app-under-test
   (`driver-function.yml`), driven by the Ruby example scripts in `example/ruby/`.
