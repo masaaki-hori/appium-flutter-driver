@@ -1,6 +1,7 @@
 import net from 'node:net';
 
-import {utilities} from 'appium-ios-device';
+import {Usbmux} from 'appium-ios-device';
+import {getDefaultSocket} from 'appium-ios-device/build/lib/usbmux/index.js';
 import {XCUITestDriver} from 'appium-xcuitest-driver';
 import B from 'bluebird';
 import {checkPortStatus} from 'portscanner';
@@ -146,8 +147,9 @@ export async function getObservatoryWsUri(
   this.localServer = net.createServer(async (localSocket) => {
     let remoteSocket;
     try {
-      remoteSocket = await utilities.connectPort(udid, remotePort);
-    } catch {
+      remoteSocket = await connectDevicePort(udid, remotePort);
+    } catch (e) {
+      this.log.warn(`Cannot connect to port ${remotePort} on the device ${udid}: ${(e as Error).message}`);
       localSocket.destroy();
       return;
     }
@@ -192,6 +194,38 @@ export async function getObservatoryWsUri(
     this.localServer = null;
   });
   return urlObject.toJSON();
+}
+
+/**
+ * Opens a usbmux connection to `port` on the device, preferring its USB entry.
+ *
+ * usbmuxd lists a device once per connection type, so a device that is also paired over Wi-Fi
+ * ("Connect via network" in Xcode) appears twice with the same UDID. appium-ios-device's
+ * `utilities.connectPort()` takes the first entry, which can be the "Network" one, and connecting
+ * through it to the loopback-bound Dart VM service fails with usbmuxd's BadDevice result
+ * (`{"MessageType":"Result","Number":2}`) - every WebSocket attempt then ends in "socket hang up".
+ *
+ * @param udid The device UDID.
+ * @param port The device-side port.
+ * @param createUsbmux Creates the usbmux client (replaced in tests).
+ */
+export async function connectDevicePort(
+  udid: string | undefined,
+  port: number,
+  createUsbmux: () => Promise<Usbmux> = async () => new Usbmux(await getDefaultSocket()),
+): Promise<net.Socket> {
+  const usbmux = await createUsbmux();
+  try {
+    const entries = (await usbmux.listDevices()).filter((device) => device?.Properties?.SerialNumber === udid);
+    if (entries.length === 0) {
+      throw new Error(`Could not find the expected device ${udid}`);
+    }
+    const device = entries.find((entry) => entry.Properties.ConnectionType === 'USB') ?? entries[0];
+    return await usbmux.connect(device.Properties.DeviceID, port, undefined);
+  } catch (e) {
+    usbmux.close();
+    throw e;
+  }
 }
 
 async function ensureDeviceLogCaptureStarted(
