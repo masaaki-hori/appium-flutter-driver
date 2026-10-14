@@ -18,11 +18,10 @@ class ExampleTests < Minitest::Test
       retryBackoffTime: 10000,
       # Pin the Dart VM service port so the driver can fall back to it when the
       # "Dart VM service is listening on" line never shows up in the simulator log.
-      # processArguments is passed explicitly because the driver currently injects
-      # these flags into its own caps copy only, which never reaches XCUITest.
       dartVmServicePort: 9123,
-      # The bundled sample2 app ships a pre-3.10 Flutter engine, which only understands the
-      # legacy --observatory-port flag (--vm-service-port needs Flutter >= 3.10).
+      # The bundled sample2 app ships a pre-3.10 Flutter engine, which ignores the
+      # --vm-service-port flag the driver injects for dartVmServicePort and only understands
+      # the legacy --observatory-port, so pass that explicitly.
       processArguments: { args: ['--observatory-port=9123', '--disable-service-auth-codes'] },
     }.merge(
       ENV['PREBUILT_WDA_PATH'] ? { usePreinstalledWDA: true, prebuiltWDAPath: ENV['PREBUILT_WDA_PATH'] } : {}
@@ -93,7 +92,12 @@ class ExampleTests < Minitest::Test
 
     @driver.context = 'FLUTTER'
     @driver.terminate_app 'samples.flutter.example.IOSFullScreen'
-    @driver.activate_app 'samples.flutter.example.IOSFullScreen'
+    # activate_app relaunches without launch arguments; mobile: launchApp passes them again so
+    # the engine binds the pinned port, and the driver reconnects to the Dart VM afterwards.
+    @driver.execute_script 'mobile: launchApp', {
+      bundleId: 'samples.flutter.example.IOSFullScreen',
+      arguments: CAPS[:caps][:processArguments][:args]
+    }
 
     text_finder = by_text 'Tap me!'
     element = ::Appium::Flutter::Element.new(@driver, finder: text_finder)
