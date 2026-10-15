@@ -1,6 +1,6 @@
 import net from 'node:net';
 
-import {Usbmux} from 'appium-ios-device';
+import iosDevice, {type Usbmux} from 'appium-ios-device';
 import {getDefaultSocket} from 'appium-ios-device/build/lib/usbmux/index.js';
 import {XCUITestDriver} from 'appium-xcuitest-driver';
 import B from 'bluebird';
@@ -11,6 +11,9 @@ import type {IsolateSocket} from './isolate_socket.js';
 import {LogMonitor} from './log-monitor.js';
 import type {LogEntry} from './log-monitor.js';
 import {connectSocket, extractObservatoryUrl, OBSERVATORY_URL_PATTERN} from './observatory.js';
+
+// appium-ios-device is CommonJS and Node 22 cannot detect `Usbmux` as a named export.
+const {Usbmux: UsbmuxClient} = iosDevice;
 
 // appium-xcuitest-driver does not export its opts type via package "exports"
 type XCUITestDriverOpts = ConstructorParameters<typeof XCUITestDriver>[0];
@@ -212,7 +215,7 @@ export async function getObservatoryWsUri(
 export async function connectDevicePort(
   udid: string | undefined,
   port: number,
-  createUsbmux: () => Promise<Usbmux> = async () => new Usbmux(await getDefaultSocket()),
+  createUsbmux: () => Promise<Usbmux> = async () => new UsbmuxClient(await getDefaultSocket()),
 ): Promise<net.Socket> {
   const usbmux = await createUsbmux();
   try {
