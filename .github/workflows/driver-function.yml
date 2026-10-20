@@ -53,6 +53,9 @@ jobs:
       working-directory:
         driver
     - name: Download prebuilt WDA
+      # WDA versions are sometimes published to npm before their GitHub release assets exist;
+      # in that case the test falls back to building WDA from source.
+      continue-on-error: true
       run: node scripts/download-wda-sim.mjs --platform=ios --outdir="$RUNNER_TEMP/wda"
       working-directory: driver
     - run: |
@@ -74,10 +77,15 @@ jobs:
       run: bundle install
       working-directory: example/ruby
     - name: Run tests
-      run: ruby example_sample2_ios.rb
+      run: |
+        wda="$RUNNER_TEMP/wda/WebDriverAgentRunner-Runner.app"
+        if [ -d "$wda" ]; then
+          export PREBUILT_WDA_PATH="$wda"
+        else
+          echo "Prebuilt WDA is not available; WDA will be built from source"
+        fi
+        ruby example_sample2_ios.rb
       working-directory: example/ruby
-      env:
-        PREBUILT_WDA_PATH: ${{ runner.temp }}/wda/WebDriverAgentRunner-Runner.app
 
     - name: Save server output
       if: ${{ always() }}
