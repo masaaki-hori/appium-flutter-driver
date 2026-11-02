@@ -30,8 +30,8 @@ import {getPageSource, getScreenshot, getWindowRect, performActions} from './com
 import {desiredCapConstraints} from './desired-caps.js';
 import {log as logger} from './logger.js';
 import {PLATFORM} from './platform.js';
-import {decode} from './sessions/base64url.js';
 import {reconnectAfterAppLaunch} from './sessions/app-launch.js';
+import {decode} from './sessions/base64url.js';
 import type {IsolateSocket} from './sessions/isolate_socket.js';
 import type {LogMonitor} from './sessions/log-monitor.js';
 import {executeElementCommand, executeGetVMCommand, executeGetIsolateCommand} from './sessions/observatory.js';
@@ -187,10 +187,6 @@ class FlutterDriver extends BaseDriver<FluttertDriverConstraints> {
   }
 
   public async activateApp(appId: string) {
-    // @ts-expect-error this exist in xcuitestdriver or uia2 driver
-    /*
-    await launchAndReConnectFlutterDriver.bind(this)(async () => await this.proxydriver?.activateApp(appId));
-    */
     await reconnectAfterAppLaunch.bind(this)(async () => {
       // @ts-expect-error this exist in xcuitestdriver or uia2 driver
       await this.proxydriver?.activateApp(appId);
@@ -267,11 +263,6 @@ class FlutterDriver extends BaseDriver<FluttertDriverConstraints> {
           await this.proxydriver?.executeCommand(cmd, ...args);
           return;
         }
-        /*
-        await launchAndReConnectFlutterDriver.bind(this)(
-          async () => await this.proxydriver?.executeCommand(cmd, ...args),
-        );
-        */
         await reconnectAfterAppLaunch.bind(this)(async () => {
           await this.proxydriver?.executeCommand(cmd, ...args);
         }, isActivateApp);

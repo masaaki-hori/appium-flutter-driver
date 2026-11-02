@@ -41,18 +41,6 @@ export const reConnectFlutterDriver = async function (
   }
 };
 
-/**
- * Launches the app-under-test with `launch` and reconnects to its new Dart VM service.
- * The previous observatory URL is forgotten before the launch, not after it: the new URL can be
- * logged before `launch` returns (on iOS, WDA's launch waits for the app to become idle), and
- * clearing it afterwards made the reconnect wait for a line that had already arrived.
- */
-export const launchAndReConnectFlutterDriver = async function (this: FlutterDriver, launch: () => Promise<unknown>) {
-  this._logmon?.clearlastMatch();
-  await launch();
-  await reConnectFlutterDriver.bind(this)(this.internalCaps, false);
-};
-
 export const createSession: any = async function (this: FlutterDriver, sessionId: string, caps, ...args) {
   try {
     // setup proxies - if platformName is not empty, make it less case sensitive

@@ -3,11 +3,11 @@ import {EventEmitter} from 'node:events';
 import net from 'node:net';
 import {it, mock} from 'node:test';
 
-import {utilities} from 'appium-ios-device';
 import {Server} from 'rpc-websockets';
 
 import {driverShouldDoProxyCmd} from '../build/lib/commands/context.js';
 import {FlutterDriver} from '../build/lib/driver.js';
+import {devicePortConnector} from '../build/lib/sessions/ios.js';
 import {LogMonitor} from '../build/lib/sessions/log-monitor.js';
 import {extractObservatoryUrl} from '../build/lib/sessions/observatory.js';
 
@@ -189,7 +189,7 @@ it('closes existing socket and forwarding connections before restarting localSer
   const forwardingPort = probe.address().port;
   await new Promise((resolve) => probe.close(resolve));
 
-  const connectPortMock = mock.method(utilities, 'connectPort', async (_udid, targetPort) => {
+  const connectPortMock = mock.method(devicePortConnector, 'connect', async (_udid, targetPort) => {
     const sock = net.connect(Number(targetPort), '127.0.0.1');
     await new Promise((resolve, reject) => {
       sock.once('connect', resolve);

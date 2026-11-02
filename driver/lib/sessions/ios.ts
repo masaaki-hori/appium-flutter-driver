@@ -21,6 +21,9 @@ type XCUITestDriverOpts = ConstructorParameters<typeof XCUITestDriver>[0];
 const LOCALHOST = `127.0.0.1`;
 const activeForwardingSockets = new WeakMap<net.Server, Set<net.Socket>>();
 
+// Opens the device-side port that `getObservatoryWsUri` forwards to (replaced in tests).
+export const devicePortConnector = {connect: connectDevicePort};
+
 const VM_SERVICE_PORT_FLAG = `--vm-service-port`;
 const DISABLE_SERVICE_AUTH_CODES_FLAG = `--disable-service-auth-codes`;
 
@@ -152,7 +155,7 @@ export async function getObservatoryWsUri(
     localSocket.once(`close`, () => openSockets.delete(localSocket));
     let remoteSocket;
     try {
-      remoteSocket = await connectDevicePort(udid, remotePort);
+      remoteSocket = await devicePortConnector.connect(udid, remotePort);
     } catch (e) {
       this.log.warn(`Cannot connect to port ${remotePort} on the device ${udid}: ${(e as Error).message}`);
       localSocket.destroy();

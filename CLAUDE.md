@@ -148,11 +148,20 @@ reimplementing native automation itself.
 - Any change that affects app process/VM-service reattachment (`activateApp`, `installApp`,
   `flutter:launchApp`, `mobile:activateApp`) must go through `reConnectFlutterDriver` — don't bypass
   it or the socket will point at a stale Dart VM Service instance. Commands that launch the app
-  wrap the launch in `launchAndReConnectFlutterDriver` (fork change): it forgets the old VM service
-  URL *before* the launch, because the new URL can be logged before the launch returns (on iOS,
-  WDA's launch waits for the app to idle). Upstream cleared it *after* the launch, so `activateApp`
-  on a real iPhone waited for a line that had already arrived and failed with "No observatory URL"
-  (`test/activate-app-reconnect.test.mjs`).
+  wrap the launch in `reconnectAfterAppLaunch` (`lib/sessions/app-launch.ts`, upstream #945/#947):
+  it resets the log monitor *before* the launch, because the new URL can be logged before the
+  launch returns (on iOS, WDA's launch waits for the app to idle). Clearing it *after* the launch
+  made `activateApp` on a real iPhone wait for a line that had already arrived and fail with "No
+  observatory URL". The fork had its own fix for this (`launchAndReConnectFlutterDriver`), dropped
+  in favor of upstream's when merging; `test/activate-app-reconnect.test.mjs` still covers it.
+- `getObservatoryWsUri` (iOS) opens the device port through `devicePortConnector.connect`, which
+  is the fork's `connectDevicePort` (prefers the USB entry over Wi-Fi). Upstream calls
+  `utilities.connectPort` directly, so tests that mock that (`test/mobile-launch-app.test.mjs`)
+  mock `devicePortConnector.connect` in this fork — re-check this after syncing upstream.
+- Isolate selection is upstream's `selectFlutterDriverIsolate` (#946, any isolate with
+  `ext.flutter.driver`). The fork's older "main-named isolates" loop (`1955b2a`) was removed when
+  merging; the fork keeps only its connection retry and the detailed "extension not found" error
+  in `observatory.ts`.
 - `driver/npm-shrinkwrap.json` is committed — prefer `npm install` (respecting the shrinkwrap) over
   actions that would regenerate it unnecessarily.
 - Peer dependency is `appium ^3.0.0`; Node engines are constrained to `^20.19.0 || ^22.12.0 ||

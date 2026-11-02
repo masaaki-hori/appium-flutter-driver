@@ -153,46 +153,6 @@ async function attemptConnectSocket(
       if (isolateId) {
         this.log.info(`Listing the given isolate id: ${isolateId}`);
         socket.isolateId = isolateId;
-      } else {
-        const vm = (await socket.call(`getVM`)) as {
-          isolates: [
-            {
-              name: string;
-              id: number;
-            },
-          ];
-        };
-        this.log.info(`Listing all isolates: ${JSON.stringify(vm.isolates)}`);
-        // To accept 'main.dart:main()' and 'main'
-        const mainIsolateCandidates = vm.isolates.filter((e) => e.name.includes(`main`));
-        if (mainIsolateCandidates.length === 0) {
-          this.log.error(`Cannot get Dart main isolate info`);
-          removeListenerAndResolve(null);
-          socket.close();
-          return;
-        }
-        // More than one 'main'-named isolate can exist (e.g. a plugin running its own
-        // secondary Flutter engine) - only one of them may actually have the flutter_driver
-        // extension registered, so probe each candidate instead of assuming the first one
-        // (previously picked unconditionally) is the app's real UI isolate.
-        let selectedIsolateId: string | number | undefined;
-        for (const candidate of mainIsolateCandidates) {
-          const candidateIsolate = (await socket.call(`getIsolate`, {
-            isolateId: `${candidate.id}`,
-          })) as {extensionRPCs: [string] | null} | null;
-          if (
-            candidateIsolate &&
-            Array.isArray(candidateIsolate.extensionRPCs) &&
-            candidateIsolate.extensionRPCs.includes(`ext.flutter.driver`)
-          ) {
-            selectedIsolateId = candidate.id;
-            break;
-          }
-        }
-        // None of the 'main' isolates have the extension registered yet - fall back to the
-        // first candidate so the retry-with-error-message loop below still applies as before.
-        // e.g. 'isolates/2978358234363215', '2978358234363215'
-        socket.isolateId = selectedIsolateId ?? mainIsolateCandidates[0].id;
       }
 
       // It could take time to load the expected module. Refresh automatic discovery on each
