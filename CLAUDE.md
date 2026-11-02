@@ -143,7 +143,12 @@ reimplementing native automation itself.
   embeds the `appium_handler` package — see "Fork customizations" below.
 - Any change that affects app process/VM-service reattachment (`activateApp`, `installApp`,
   `flutter:launchApp`, `mobile:activateApp`) must go through `reConnectFlutterDriver` — don't bypass
-  it or the socket will point at a stale Dart VM Service instance.
+  it or the socket will point at a stale Dart VM Service instance. Commands that launch the app
+  wrap the launch in `launchAndReConnectFlutterDriver` (fork change): it forgets the old VM service
+  URL *before* the launch, because the new URL can be logged before the launch returns (on iOS,
+  WDA's launch waits for the app to idle). Upstream cleared it *after* the launch, so `activateApp`
+  on a real iPhone waited for a line that had already arrived and failed with "No observatory URL"
+  (`test/activate-app-reconnect.test.mjs`).
 - `driver/npm-shrinkwrap.json` is committed — prefer `npm install` (respecting the shrinkwrap) over
   actions that would regenerate it unnecessarily.
 - Peer dependency is `appium ^3.0.0`; Node engines are constrained to `^20.19.0 || ^22.12.0 ||

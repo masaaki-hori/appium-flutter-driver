@@ -34,7 +34,7 @@ import {decode} from './sessions/base64url.js';
 import type {IsolateSocket} from './sessions/isolate_socket.js';
 import type {LogMonitor} from './sessions/log-monitor.js';
 import {executeElementCommand, executeGetVMCommand, executeGetIsolateCommand} from './sessions/observatory.js';
-import {createSession, reConnectFlutterDriver} from './sessions/session.js';
+import {createSession, launchAndReConnectFlutterDriver} from './sessions/session.js';
 
 type FluttertDriverConstraints = typeof desiredCapConstraints;
 // Need to not proxy in WebView context
@@ -187,8 +187,7 @@ class FlutterDriver extends BaseDriver<FluttertDriverConstraints> {
 
   public async activateApp(appId: string) {
     // @ts-expect-error this exist in xcuitestdriver or uia2 driver
-    await this.proxydriver?.activateApp(appId);
-    await reConnectFlutterDriver.bind(this)(this.internalCaps);
+    await launchAndReConnectFlutterDriver.bind(this)(async () => await this.proxydriver?.activateApp(appId));
   }
 
   public async terminateApp(appId: string) {
@@ -256,11 +255,13 @@ class FlutterDriver extends BaseDriver<FluttertDriverConstraints> {
       // the reconnect can wait for the observatory URL much longer than newCommandTimeout.
       await this.clearNewCommandTimeout();
       try {
-        await this.proxydriver?.executeCommand(cmd, ...args);
         if (skipAttachObservatoryUrl) {
+          await this.proxydriver?.executeCommand(cmd, ...args);
           return;
         }
-        await reConnectFlutterDriver.bind(this)(this.internalCaps);
+        await launchAndReConnectFlutterDriver.bind(this)(
+          async () => await this.proxydriver?.executeCommand(cmd, ...args),
+        );
         return;
       } finally {
         await this.startNewCommandTimeout();
