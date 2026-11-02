@@ -38,6 +38,10 @@ npm test                 # build + a few node:test unit tests (test/*.test.mjs)
 npm run clean            # tsc -b --clean
 ```
 
+Before committing, run `npm test && npm run lint && npm run format:check` — the same checks as
+`nodejs.yml`. `npm test` alone does not catch formatting (oxfmt joins parameter lists that fit on
+one line).
+
 Unit tests are few (`test/*.test.mjs`, `node --test`). Correctness is mostly verified by:
 - CI type-check/lint/format (`nodejs.yml`)
 - End-to-end functional runs against a real emulator/simulator + a real Flutter app-under-test
