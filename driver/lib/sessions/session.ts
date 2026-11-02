@@ -40,10 +40,7 @@ export const reConnectFlutterDriver = async function (
  * logged before `launch` returns (on iOS, WDA's launch waits for the app to become idle), and
  * clearing it afterwards made the reconnect wait for a line that had already arrived.
  */
-export const launchAndReConnectFlutterDriver = async function (
-  this: FlutterDriver,
-  launch: () => Promise<unknown>,
-) {
+export const launchAndReConnectFlutterDriver = async function (this: FlutterDriver, launch: () => Promise<unknown>) {
   this._logmon?.clearlastMatch();
   await launch();
   await reConnectFlutterDriver.bind(this)(this.internalCaps, false);
