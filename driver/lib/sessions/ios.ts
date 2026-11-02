@@ -19,6 +19,7 @@ const {Usbmux: UsbmuxClient} = iosDevice;
 type XCUITestDriverOpts = ConstructorParameters<typeof XCUITestDriver>[0];
 
 const LOCALHOST = `127.0.0.1`;
+const activeForwardingSockets = new WeakMap<net.Server, Set<net.Socket>>();
 
 const VM_SERVICE_PORT_FLAG = `--vm-service-port`;
 const DISABLE_SERVICE_AUTH_CODES_FLAG = `--disable-service-auth-codes`;
@@ -83,9 +84,7 @@ export async function getObservatoryWsUri(
   clearLog: boolean = false,
 ): Promise<string> {
   if (clearLog) {
-    this._logmon?.clearlastMatch();
-    this._logmon?.stop();
-    this._logmon?.start();
+    this._logmon?.reset();
   }
 
   let urlObject;
@@ -147,7 +146,10 @@ export async function getObservatoryWsUri(
   this.log.info(`Running on iOS real device`);
   const {udid} = proxydriver.opts;
   await requireFreePort.bind(this)(localPort);
+  const openSockets = new Set<net.Socket>();
   this.localServer = net.createServer(async (localSocket) => {
+    openSockets.add(localSocket);
+    localSocket.once(`close`, () => openSockets.delete(localSocket));
     let remoteSocket;
     try {
       remoteSocket = await connectDevicePort(udid, remotePort);
@@ -180,6 +182,9 @@ export async function getObservatoryWsUri(
     this.localServer?.once(`listening`, resolve);
     this.localServer?.once(`error`, reject);
   });
+  if (this.localServer) {
+    activeForwardingSockets.set(this.localServer, openSockets);
+  }
   this.localServer?.listen(localPort);
   try {
     await listeningPromise;
@@ -327,8 +332,19 @@ async function requireFreePort(this: FlutterDriver, port: number) {
   // Try to close existing local server if it exists
   if (this.localServer) {
     this.log.info(`Closing existing local server on port ${port}`);
+    const serverToClose = this.localServer;
+    this.localServer = null;
+    if (this.socket) {
+      try {
+        this.socket.close();
+      } catch {}
+      this.socket = null;
+    }
+    for (const sock of activeForwardingSockets.get(serverToClose) ?? []) {
+      sock.destroy();
+    }
     await new Promise<void>((resolve) => {
-      this.localServer?.close((err) => {
+      serverToClose.close((err) => {
         if (err) {
           this.log.error(`Error occurred while closing the local server: ${err.message}`);
           return resolve(); // Resolve even if there's an error to avoid hanging

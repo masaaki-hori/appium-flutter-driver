@@ -17,6 +17,13 @@ export const reConnectFlutterDriver = async function (
     this.log.errorWithException(new Error(`No platformName was given`));
   }
 
+  if (this.socket) {
+    try {
+      this.socket.close();
+    } catch {}
+    this.socket = null;
+  }
+
   switch (_.toLower(caps.platformName)) {
     case PLATFORM.IOS:
       this.socket = await connectIOSSession.bind(this)(this.proxydriver, caps, clearLog);
