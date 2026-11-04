@@ -5,7 +5,7 @@ import _ from 'lodash';
 
 import type {FlutterDriver} from '../driver.js';
 import {decode} from './base64url.js';
-import {IsolateSocket} from './isolate_socket.js';
+import {DartVmConnectionClosedError, IsolateSocket} from './isolate_socket.js';
 import type {LogEntry} from './log-monitor.js';
 
 const truncateLength = 500;
@@ -134,17 +134,25 @@ async function attemptConnectSocket(
       removeListenerAndResolve(null);
     };
     socket.on(`timeout`, onTimeoutListener);
-    const onOpenListener = async () => {
+    const setUpSocket = async () => {
       const originalSocketCall = socket.call;
       socket.call = async (...args: any) => {
         try {
           // `await` is needed so that rejected promise will be thrown and caught
           return await originalSocketCall.apply(socket, args);
         } catch (e) {
-          this.log.errorWithException(new Error(JSON.stringify(e)));
+          // A dropped connection must fail the caller. Handlers such as enterText return this
+          // result as is, so an undefined result here would report the command as a success.
+          if (e instanceof DartVmConnectionClosedError) {
+            throw e;
+          }
+          if (!socket.isConnected) {
+            throw new DartVmConnectionClosedError(`The Dart VM connection is closed (${e?.message ?? e})`);
+          }
+          this.log.errorWithException(e instanceof Error ? e : new Error(JSON.stringify(e)));
           // Re-throw (rather than resolving to undefined) so callers see the real failure
           // (e.g. a VM service RPC error) instead of a confusing secondary TypeError from
-          // dereferencing an undefined result
+          // dereferencing an undefined result (fork change)
           throw e;
         }
       };
@@ -157,9 +165,19 @@ async function attemptConnectSocket(
 
       // It could take time to load the expected module. Refresh automatic discovery on each
       // retry because a background engine can start before the UI isolate that exposes the driver.
+      // A closed connection cannot recover by retrying, so stop the retries and fail the setup.
+      let connectionClosedError: DartVmConnectionClosedError | undefined;
       try {
         await retryInterval(moduleCheckIntervalCount, moduleCheckIntervalMs, async () => {
-          await selectFlutterDriverIsolate.call(this, socket, isolateId);
+          try {
+            await selectFlutterDriverIsolate.call(this, socket, isolateId);
+          } catch (e) {
+            if (e instanceof DartVmConnectionClosedError) {
+              connectionClosedError = e;
+              return;
+            }
+            throw e;
+          }
         });
       } catch (e) {
         if (e.message.includes(`"ext.flutter.driver" is not found`)) {
@@ -180,7 +198,19 @@ async function attemptConnectSocket(
         removeListenerAndResolve(null);
         return;
       }
+      if (connectionClosedError) {
+        throw connectionClosedError;
+      }
       removeListenerAndResolve(socket);
+    };
+    // `open` listeners are not awaited. Settle the connection promise on a setup failure instead of
+    // leaving an unhandled rejection and a promise that never settles.
+    const onOpenListener = () => {
+      setUpSocket().catch((e) => {
+        this.log.error(`Cannot set up the connection to ${dartObservatoryURL}: ${e.message}`);
+        removeListenerAndResolve(null);
+        socket.dispose();
+      });
     };
     socket.on(`open`, onOpenListener);
   });
@@ -231,6 +261,11 @@ export async function executeElementCommand(
   this.log.debug(`>>> ${JSON.stringify(serializedCommand)}`);
   const data = await (this.socket as IsolateSocket).executeSocketCommand(serializedCommand);
   this.log.debug(`<<< ${JSON.stringify(data)} | previous command ${command}`);
+  if (!data) {
+    throw new Error(
+      `Cannot execute command ${command}, no response from the Dart VM. Check the server log for the connection error`,
+    );
+  }
   if (data.isError) {
     throw new Error(`Cannot execute command ${command}, server response ${JSON.stringify(data, null, 2)}`);
   }
